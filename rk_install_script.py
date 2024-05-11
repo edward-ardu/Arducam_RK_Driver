@@ -69,12 +69,18 @@ def get_resolution(camera):
 def file_list(file_type, file_dir):
     return [f for f in os.listdir(file_dir) if f.endswith('.{}'.format(file_type))]
 
+def check_folder(path):
+    if os.path.exists(path) and os.path.isdir(path):
+        if os.listdir(path):
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
 # TODO 需要增加下载包（会有多版本内核），解压后安装
 def deploy_camera_driver(platform):
-    run_command("rm Arducam_RK_driver_5.10.160.tar.gz")
-    run_command("wget https://github.com/ArduCAM/Arducam_RK_Driver/releases/download/arducam_rk_driver_v0.0.1/Arducam_RK_driver_5.10.160.tar.gz")
-    run_command("tar avxf Arducam_RK_driver_5.10.160.tar.gz")
-    run_command("rm -rf Arducam_RK_driver && cp -r Arducam_RK_driver_5.10.160 Arducam_RK_driver")
     if platform == "5A":
         folder_path = 'Arducam_RK_driver/rock-5a/'
         deb_files = file_list("deb", folder_path)
@@ -211,6 +217,12 @@ if __name__ == '__main__':
     
     uname_version = sh_("uname -r | grep -oP '\d+\.\d+\.\d+' | head -n1").strip()
 
+    Arducam_RK_driver_status = check_folder("Arducam_RK_driver")
+    if Arducam_RK_driver_status == False:
+        run_command("rm Arducam_RK_driver_5.10.160.tar.gz")
+        run_command("wget https://github.com/ArduCAM/Arducam_RK_Driver/releases/download/arducam_rk_driver_v0.0.1/Arducam_RK_driver_5.10.160.tar.gz")
+        run_command("tar avxf Arducam_RK_driver_5.10.160.tar.gz")
+        run_command("rm -rf Arducam_RK_driver && mv Arducam_RK_driver_5.10.160 Arducam_RK_driver")
     if uname_version != "5.10.160":
         deploy_camera_driver(device_model)
     install_dtbo(device_model, camera_name)
